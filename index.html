@@ -129,7 +129,7 @@
 
 
 
-                
+
 
 
 
@@ -158,34 +158,58 @@
             }
 
             preload() {
-                // 加載遊戲所需的資源
+                this.load.image('bg', 'asset/menu/bg.jpg');
+                this.load.spritesheet("player1", "asset/player1.png", {
+                    frameWidth: 60.5,  // 設定每一幀的寬度
+                    frameHeight: 114 // 設定每一幀的高度
+                });
             }
 
             create() {
-
                 const bg = this.add.image(400, 300, 'bg').setDisplaySize(800, 600);
-                bg.setAlpha(0.7);
 
-                
+                this.player = this.physics.add
+                    .sprite(400, 500, "player1")
+                    .setCollideWorldBounds(true);
 
+                this.cursors = this.input.keyboard.createCursorKeys();
 
+                // **向左走動畫 (1~10 幀)**
+                this.anims.create({
+                    key: 'walk_left',
+                    frames: this.anims.generateFrameNumbers('player1', { start: 0, end: 9 }),
+                    frameRate: 10,
+                    repeat: -1
+                });
 
+                // **向右走動畫 (11~20 幀)**
+                this.anims.create({
+                    key: 'walk_right',
+                    frames: this.anims.generateFrameNumbers('player1', { start: 10, end: 19 }),
+                    frameRate: 10,
+                    repeat: -1
+                });
 
-                
-
-
-
-
-
-
-
-
-
-
-
+                console.log('動畫是否存在:', this.anims.exists('walk_left'), this.anims.exists('walk_right'));
             }
 
             update() {
+                if (this.cursors.left.isDown) {
+                    this.player.setVelocityX(-160);
+                    if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_left') {
+                        this.player.play('walk_left', true);
+                    }
+                }
+                else if (this.cursors.right.isDown) {
+                    this.player.setVelocityX(160);
+                    if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_right') {
+                        this.player.play('walk_right', true);
+                    }
+                }
+                else {
+                    this.player.setVelocityX(0);
+                    this.player.stop();  // 停止動畫
+                }
             }
         }
 
@@ -195,10 +219,20 @@
             width: 800,
             height: 600,
             backgroundColor: '#2d2d2d',
-            scene: [MenuScene, ModeScene,single_1Scene]  // 添加兩個場景
+            pixelArt: true,
+            physics: {
+                default: "arcade",
+                arcade: {
+                    gravity: { y: 500 },
+                },
+            },
+            scene: [MenuScene, ModeScene, single_1Scene]  // 添加兩個場景
         };
 
         const game = new Phaser.Game(config);
+
+        const player = this.add.sprite(400, 300, 'player_run');
+        player.play('run');
     </script>
 </body>
 
