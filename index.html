@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Phaser UI Example</title>
+    <script src="./asset/phaser@3.55.2.min.js"></script>
+</head>
+
+<body>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            /* 可自訂背景顏色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            /* 滿版垂直 */
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <script>
+        // 主選單場景--------------------------------------------------------------------------------------------------------------------------------------------------
+        class MenuScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'MenuScene' });
+            }
+
+            preload() {
+                this.load.image('bg', 'asset/menu/bg.jpg');
+                this.load.image('btn_start', 'asset/menu/btn_start.png');
+                this.load.image('btn_setting', 'asset/menu/btn_setting.png');
+                this.load.image('btn_exit', 'asset/menu/btn_exit.png');
+            }
+
+            create() {
+                const bg = this.add.image(400, 300, 'bg').setDisplaySize(800, 600);
+                bg.setAlpha(0.7);
+
+                // 遊戲標題
+                this.add.text(400, 150, '接蘋果小遊戲', {
+                    fontSize: '42px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+
+                // Start 按鈕
+                const startButton = this.add.image(400, 250, 'btn_start')
+                    .setInteractive({ useHandCursor: true })  // 使用手形指標
+                    .setScale(0.35);
+
+                // 增大觸發區域
+                startButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+
+                startButton.on('pointerdown', () => {
+                    console.log('顯示開始');
+                    this.scene.start('ModeScene');  // 切換到遊戲場景
+                });
+
+                // Setting 按鈕
+                const settingButton = this.add.image(400, 400, 'btn_setting')
+                    .setInteractive({ useHandCursor: true })  // 使用手形指標
+                    .setScale(0.35);
+
+                settingButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+
+                settingButton.on('pointerdown', () => {
+                    console.log('顯示設定');
+                });
+
+                // Exit 按鈕
+                const exitButton = this.add.image(400, 550, 'btn_exit')
+                    .setInteractive({ useHandCursor: true })  // 使用手形指標
+                    .setScale(0.35);
+
+                exitButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+
+                exitButton.on('pointerdown', () => {
+                    console.log('顯示離開');
+                    window.close();  // 關閉當前瀏覽器窗口
+                });
+
+            }
+
+            update() {
+            }
+        }
+
+        // 模式場景-------------------------------------------------------------------------------------------------------------------------------------
+        class ModeScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'ModeScene' });
+            }
+
+            preload() {
+                // 加載遊戲所需的資源
+            }
+
+            create() {
+                const singleButton = this.add.text(400, 200, '單人模式', {
+                    fontSize: '28px',
+                    backgroundColor: '#00aa00',
+                    padding: { x: 20, y: 10 },
+                    color: '#ffffff'
+                }).setOrigin(0.5).setInteractive();
+
+                // 點擊事件：切換到遊戲場景
+                singleButton.on('pointerdown', () => {
+                    this.scene.start('single_1Scene');
+                });
+
+                const multipleButton = this.add.text(400, 100, '多人模式', {
+                    fontSize: '28px',
+                    backgroundColor: '#00aa00',
+                    padding: { x: 20, y: 10 },
+                    color: '#ffffff'
+                }).setOrigin(0.5).setInteractive();
+
+                // 點擊事件：切換到遊戲場景
+                multipleButton.on('pointerdown', () => {
+                    this.scene.start('GameScene');
+                });
+
+
+
+
+                
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+            update() {
+            }
+        }
+
+
+
+        //------------------------------------------------------
+
+
+        class single_1Scene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'single_1Scene' });
+            }
+
+            preload() {
+                // 加載遊戲所需的資源
+            }
+
+            create() {
+
+                const bg = this.add.image(400, 300, 'bg').setDisplaySize(800, 600);
+                bg.setAlpha(0.7);
+
+                
+
+
+
+
+                
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+            update() {
+            }
+        }
+
+        // 遊戲配置------------------------------------------------------------
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            backgroundColor: '#2d2d2d',
+            scene: [MenuScene, ModeScene,single_1Scene]  // 添加兩個場景
+        };
+
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+
+</html>
