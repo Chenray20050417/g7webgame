@@ -51,23 +51,20 @@
 
                 // Start 按鈕
                 const startButton = this.add.image(400, 250, 'btn_start')
-                    .setInteractive({ useHandCursor: true })  // 使用手形指標
-                    .setScale(0.35);
-
-                // 增大觸發區域
-                startButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+                    .setOrigin(0.5)
+                    .setDisplaySize(403, 302)  // 等同 setScale(0.35)
+                    .setInteractive({ useHandCursor: true });
 
                 startButton.on('pointerdown', () => {
                     console.log('顯示開始');
-                    this.scene.start('ModeScene');  // 切換到遊戲場景
+                    this.scene.start('ModeScene');
                 });
 
                 // Setting 按鈕
                 const settingButton = this.add.image(400, 400, 'btn_setting')
-                    .setInteractive({ useHandCursor: true })  // 使用手形指標
-                    .setScale(0.35);
-
-                settingButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+                    .setOrigin(0.5)
+                    .setDisplaySize(403, 302)
+                    .setInteractive({ useHandCursor: true });
 
                 settingButton.on('pointerdown', () => {
                     console.log('顯示設定');
@@ -75,14 +72,13 @@
 
                 // Exit 按鈕
                 const exitButton = this.add.image(400, 550, 'btn_exit')
-                    .setInteractive({ useHandCursor: true })  // 使用手形指標
-                    .setScale(0.35);
-
-                exitButton.setInteractive(new Phaser.Geom.Rectangle(-100, -100, 200, 100)); // 擴大觸發範圍
+                    .setOrigin(0.5)
+                    .setDisplaySize(403, 302)
+                    .setInteractive({ useHandCursor: true });
 
                 exitButton.on('pointerdown', () => {
                     console.log('顯示離開');
-                    window.close();  // 關閉當前瀏覽器窗口
+                    window.close();
                 });
 
             }
@@ -153,65 +149,142 @@
 
 
         class single_1Scene extends Phaser.Scene {
-            constructor() {
-                super({ key: 'single_1Scene' });
+    constructor() {
+        super({ key: 'single_1Scene' });
+    }
+
+    preload() {
+        this.load.image('bg', 'asset/menu/bg.jpg');
+        this.load.image('black', 'asset/fruits/black.png');
+        this.load.image('red', 'asset/fruits/red.png');
+        this.load.image('gold', 'asset/fruits/gold.png');
+        this.load.image('colorful', 'asset/fruits/colorful.png');
+
+        this.load.spritesheet("player1", "asset/player1.png", {
+            frameWidth: 60.5,
+            frameHeight: 114
+        });
+    }
+
+    create() {
+        this.add.image(400, 300, 'bg').setDisplaySize(800, 600);
+
+        this.player = this.physics.add.sprite(400, 500, "player1").setCollideWorldBounds(true);
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.anims.create({
+            key: 'walk_left',
+            frames: this.anims.generateFrameNumbers('player1', { start: 0, end: 9 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'walk_right',
+            frames: this.anims.generateFrameNumbers('player1', { start: 10, end: 19 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        // 分數與時間
+        this.score = 0;
+        this.timeLeft = 60;
+        this.rainbowDropped = false;
+
+        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '24px', fill: '#fff' });
+        this.timerText = this.add.text(650, 16, 'Time: 60', { fontSize: '24px', fill: '#fff' });
+
+        this.timer = this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        });
+
+        // 掉落物群組
+        this.fruits = this.physics.add.group();
+
+        // 掉落邏輯
+        this.time.addEvent({
+            delay: 800,
+            callback: this.spawnFruit,
+            callbackScope: this,
+            loop: true
+        });
+
+        this.physics.add.overlap(this.player, this.fruits, this.collectFruit, null, this);
+    }
+
+    update() {
+        if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-160);
+            if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_left') {
+                this.player.play('walk_left', true);
             }
-
-            preload() {
-                this.load.image('bg', 'asset/menu/bg.jpg');
-                this.load.spritesheet("player1", "asset/player1.png", {
-                    frameWidth: 60.5,  // 設定每一幀的寬度
-                    frameHeight: 114 // 設定每一幀的高度
-                });
+        } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(160);
+            if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_right') {
+                this.player.play('walk_right', true);
             }
-
-            create() {
-                const bg = this.add.image(400, 300, 'bg').setDisplaySize(800, 600);
-
-                this.player = this.physics.add
-                    .sprite(400, 500, "player1")
-                    .setCollideWorldBounds(true);
-
-                this.cursors = this.input.keyboard.createCursorKeys();
-
-                // **向左走動畫 (1~10 幀)**
-                this.anims.create({
-                    key: 'walk_left',
-                    frames: this.anims.generateFrameNumbers('player1', { start: 0, end: 9 }),
-                    frameRate: 10,
-                    repeat: -1
-                });
-
-                // **向右走動畫 (11~20 幀)**
-                this.anims.create({
-                    key: 'walk_right',
-                    frames: this.anims.generateFrameNumbers('player1', { start: 10, end: 19 }),
-                    frameRate: 10,
-                    repeat: -1
-                });
-
-                console.log('動畫是否存在:', this.anims.exists('walk_left'), this.anims.exists('walk_right'));
-            }
-
-            update() {
-                if (this.cursors.left.isDown) {
-                    this.player.setVelocityX(-160);
-                    if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_left') {
-                        this.player.play('walk_left', true);
-                    }
-                }
-                else if (this.cursors.right.isDown) {
-                    this.player.setVelocityX(160);
-                    if (!this.player.anims.isPlaying || this.player.anims.currentAnim.key !== 'walk_right') {
-                        this.player.play('walk_right', true);
-                    }
-                }
-                else {
-                    this.player.setVelocityX(0);
-                    this.player.stop();  // 停止動畫
-                }
-            }
+        } else {
+            this.player.setVelocityX(0);
+            this.player.stop();
         }
+    }
+
+    updateTimer() {
+        this.timeLeft--;
+        this.timerText.setText('Time: ' + this.timeLeft);
+
+        if (this.timeLeft <= 0) {
+            this.timer.remove(false);
+            this.endLevel();
+        }
+    }
+
+    spawnFruit() {
+        const x = Phaser.Math.Between(50, 750);
+        const rand = Math.random();
+        let fruitType;
+
+        if (rand < 0.5) fruitType = 'red';         // 50% 機率：紅蘋果 +2
+        else if (rand < 0.7) fruitType = 'black';  // 20% 機率：黑蘋果 -5
+        else if (rand < 0.95) fruitType = 'gold';  // 25% 機率：金蘋果 +10
+        else if (!this.rainbowDropped) {
+            fruitType = 'colorful';                // 5% 機率：彩虹蘋果 +100（僅掉一次）
+            this.rainbowDropped = true;
+        } else {
+            fruitType = 'red'; // fallback
+        }
+
+        const fruit = this.fruits.create(x, 0, fruitType).setScale(0.05);
+        fruit.type = fruitType;
+        fruit.setVelocityY(150);
+    }
+
+    collectFruit(player, fruit) {
+        const type = fruit.type;
+        fruit.destroy();
+
+        switch (type) {
+            case 'red': this.score += 2; break;
+            case 'gold': this.score += 10; break;
+            case 'colorful': this.score += 100; break;
+            case 'black': this.score -= 5; break;
+        }
+
+        this.scoreText.setText('Score: ' + this.score);
+    }
+
+    endLevel() {
+        if (this.score >= 150) {
+            this.scene.start('single_2Scene'); // 第二關
+        } else {
+            this.scene.restart(); // 重新開始
+        }
+    }
+}
+        
 
         // 遊戲配置------------------------------------------------------------
         const config = {
